@@ -160,12 +160,46 @@ public class Scanner {
     }
 
     private void checkComment() {
-        if (end()) return;
-        if (peek() != '/') {
+        if (end()) {
             addToken(TokenType.SLASH);
-        } else {
-            skipCommentLine();
+            return;
         }
+        char next = peek();
+        switch (next) {
+            case '*':
+                skipCommentBlock();
+                break;
+            case '/':
+                skipCommentLine();
+                break;
+            default:
+                addToken(TokenType.SLASH);
+        }
+    }
+
+    private void skipCommentBlock() {
+        int depth = 1;
+        nextChar();
+        char c;
+        while (depth > 0 && !end()) {
+            c = peek();
+            if (c == '\n') line++;
+            if (c == '/' && peekNextChar() == '*') {
+                nextChar();
+                nextChar();
+                depth++;
+                continue;
+            }
+            if (c == '*' && peekNextChar() == '/') {
+                nextChar();
+                nextChar();
+                depth--;
+                continue;
+            }
+            nextChar();
+        }
+        if (depth > 0)
+            Error.error(line, "Unexpected character.");
     }
 
     private void skipCommentLine() {
