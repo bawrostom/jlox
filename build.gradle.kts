@@ -1,8 +1,13 @@
 plugins {
     id("java")
+    application
 }
 
-group = "org.example"
+application {
+    mainClass = "com.jlox.Jlox"
+}
+
+group = "com.jlox"
 version = "1.0-SNAPSHOT"
 
 repositories {
