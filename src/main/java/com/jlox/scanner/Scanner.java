@@ -1,6 +1,7 @@
-package com.jlox;
+package com.jlox.scanner;
 
-import com.jlox.Token.TokenType;
+import com.jlox.error.Error;
+import com.jlox.scanner.Token.TokenType;
 
 import java.util.ArrayList;
 import java.util.List;

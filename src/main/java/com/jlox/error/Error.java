@@ -1,4 +1,4 @@
-package com.jlox;
+package com.jlox.error;
 
 import java.util.logging.Logger;
 
