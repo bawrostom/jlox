@@ -4,7 +4,6 @@ import com.jlox.error.Error;
 import com.jlox.parser.*;
 import com.jlox.scanner.Scanner;
 import com.jlox.scanner.Token;
-import com.jlox.scanner.Token.TokenType;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,24 +15,14 @@ import java.util.List;
 
 public class Jlox {
     public static void main(String[] args) throws IOException {
-
-        Expression expression = new Binary(
-                new Unary(
-                        new Token(TokenType.MINUS, "-", null, 1),
-                        new Literal(123)),
-                new Token(TokenType.STAR, "*", null, 1),
-                new Grouping(
-                        new Literal(45.67)));
-
-        System.out.println(new AstPrinter().print(expression));
-//        if (args.length > 1) {
-//            System.out.println("Usage: jlox [script]");
-//            System.exit(64);
-//        } else if (args.length == 1) {
-//            runFile(args[0]);
-//        } else {
-//            runPrompt();
-//        }
+        if (args.length > 1) {
+            System.out.println("Usage: jlox [script]");
+            System.exit(64);
+        } else if (args.length == 1) {
+            runFile(args[0]);
+        } else {
+            runPrompt();
+        }
     }
 
     public static void runFile(String path) throws IOException {
