@@ -128,25 +128,6 @@ public class Scanner {
                 }
 
         }
-//        List<Token> tokens = new ArrayLis
-//        t<>();
-//        TokenType token = null;
-//        int line = 0;
-//        String lexem = "";
-//        StringBuilder lexemStringBuilder = new StringBuilder();
-//
-//        for (char c : source.toCharArray()) {
-//            line += (c == '\n') ? 1 : 0;
-//            if (c == ' ') {
-//                lexem = lexemStringBuilder.toString();
-//                tokens.add(new Token(null, lexem, null, line));null
-//                lexemStringBuilder.delete(0, lexemStringBuilder.length());
-//                break;
-//            }
-//            lexemStringBuilder.append(c);
-//        }
-//        return tokens;
-//    }
     }
 
     private char nextChar() {

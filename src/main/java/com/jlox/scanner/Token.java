@@ -18,7 +18,6 @@ public record Token(TokenType type, String lexeme, Object literal, int line) {
         GREATER, GREATER_EQUAL,
         LESS, LESS_EQUAL,
 
-        // Literals.
         IDENTIFIER, STRING, NUMBER,
 
         // Keywords.

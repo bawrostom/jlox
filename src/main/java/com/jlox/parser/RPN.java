@@ -9,7 +9,7 @@ public class RPN implements ExpressionVisitor<String> {
     @Override
     public String visit(Binary expression) {
         return parenthesize(expression.operator().lexeme(),
-                expression.right(), expression.left());
+                expression.left(), expression.left());
     }
 
     @Override

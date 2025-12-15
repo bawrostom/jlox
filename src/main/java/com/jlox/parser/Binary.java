@@ -2,7 +2,7 @@ package com.jlox.parser;
 
 import com.jlox.scanner.Token;
 
-public record Binary(Expression right, Token operator, Expression left) implements Expression {
+public record Binary(Expression left, Token operator, Expression right) implements Expression {
 
     @Override
     public Binary getExpression() {
