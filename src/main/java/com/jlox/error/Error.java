@@ -1,5 +1,9 @@
 package com.jlox.error;
 
+import com.jlox.scanner.Token;
+
+import static com.jlox.scanner.Token.TokenType.*;
+
 import java.util.logging.Logger;
 
 public class Error {
@@ -8,6 +12,14 @@ public class Error {
 
     public static void error(int line, String message) {
         report(line, "", message);
+    }
+
+    public static void error(Token token, String message) {
+        if (token.type() == EOF) {
+            report(token.line(), " at end" + token.lexeme() + "'", message);
+        } else {
+            report(token.line(), " at '" + token.lexeme() + "'", message);
+        }
     }
 
     private static void report(int line, String where,

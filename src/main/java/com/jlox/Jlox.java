@@ -53,5 +53,13 @@ public class Jlox {
         for (Token token : tokens) {
             System.out.println(token);
         }
+        Parser parser = new Parser(tokens);
+        Expression expr = parser.parse();
+        if (Error.getHandlerError()) {
+            System.out.println("Syntax error");
+        } else {
+//            System.out.println(new AstPrinter().print(new Binary(new Literal(new Integer(6)), new Token(Token.TokenType.PLUS, "+", null, 0), new Literal(new Integer(10)))));
+            System.out.println(new AstPrinter().print(expr));
+        }
     }
 }

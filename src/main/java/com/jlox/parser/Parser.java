@@ -1,6 +1,8 @@
 package com.jlox.parser;
 
+import com.jlox.error.Error;
 import com.jlox.scanner.Token;
+import com.jlox.error.ParseError;
 
 import static com.jlox.scanner.Token.TokenType;
 import static com.jlox.scanner.Token.TokenType.*;
@@ -14,6 +16,14 @@ public class Parser {
 
     public Parser(List<Token> tokens) {
         this.tokens = tokens;
+    }
+
+    public Expression parse() {
+        try {
+            return expression();
+        } catch (ParseError e) {
+            return null;
+        }
     }
 
     private Expression expression() {
@@ -59,7 +69,7 @@ public class Parser {
     private Expression factor() {
         Expression left = Unary();
 
-        while (match(SLASH, DOT)) {
+        while (match(SLASH, STAR)) {
             Token operator = previous();
             Expression right = Unary();
             left = new Binary(left, operator, right);
@@ -77,14 +87,35 @@ public class Parser {
         return primary();
     }
 
+    //    primary        → NUMBER | STRING | "true" | "false" | "nil"
+    //            | "(" expression ")" ;
     private Expression primary() {
-        TokenType tokenType = peek();
-        switch (tokenType) {
-            case NUMBER:
-                new Literal(advance().literal());
-            default:
-                return null;
+        if (match(FALSE)) {
+            return new Literal(false);
         }
+        if (match(TRUE)) {
+            return new Literal(true);
+        }
+        if (match(NIL)) {
+            return new Literal(null);
+        }
+        if (match(STRING, NUMBER)) {
+            return new Literal(previous().lexeme());
+        }
+
+        if (match(LEFT_PAREN)) {
+            Expression expr = expression();
+            consume(RIGHT_PAREN, "Expected token \")\"");
+            return new Grouping(expr);
+        }
+        throw error(peek(), "Expected expression");
+    }
+
+    private Token consume(TokenType tokenType, String errorMessage) {
+        if (check(tokenType)) {
+            return advance();
+        }
+        throw error(peek(), errorMessage);
     }
 
     private boolean match(TokenType... tokenTypes) {
@@ -104,15 +135,41 @@ public class Parser {
 
     private boolean check(TokenType tokenType) {
         if (end()) return false;
-        return peek() == tokenType;
+        return peek().type() == tokenType;
     }
 
-    private TokenType peek() {
-        return tokens.get(currentPos).type();
+    private Token peek() {
+        return tokens.get(currentPos);
     }
 
     private Token previous() {
         return tokens.get(currentPos - 1);
+    }
+
+    private ParseError error(Token token, String message) {
+        Error.error(token, message);
+        return new ParseError();
+    }
+
+    private void synchronize() {
+        advance();
+
+        while (!end()) {
+            if (previous().type() == SEMICOLON) return;
+
+            switch (peek().type()) {
+                case CLASS:
+                case FOR:
+                case IF:
+                case RETURN:
+                case VAR:
+                case WHILE:
+                case FUN:
+                case PRINT:
+                    return;
+            }
+            advance();
+        }
     }
 
     private boolean end() {

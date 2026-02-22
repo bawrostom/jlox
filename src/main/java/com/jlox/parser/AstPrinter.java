@@ -9,7 +9,7 @@ public class AstPrinter implements ExpressionVisitor<String> {
     @Override
     public String visit(Binary expression) {
         return parenthesize(expression.operator().lexeme(),
-                expression.left(), expression.left());
+                expression.left(), expression.right());
     }
 
     @Override
