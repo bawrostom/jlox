@@ -1,13 +1,12 @@
 package com.jlox.parser;
 
-import com.jlox.error.Error;
-import com.jlox.scanner.Token;
 import com.jlox.error.ParseError;
+import com.jlox.scanner.Token;
+
+import java.util.List;
 
 import static com.jlox.scanner.Token.TokenType;
 import static com.jlox.scanner.Token.TokenType.*;
-
-import java.util.List;
 
 public class Parser {
 
@@ -26,14 +25,21 @@ public class Parser {
         }
     }
 
+    // expression -> equality
     private Expression expression() {
         return equality();
     }
 
     //    equality       → comparison ( ( "!=" | "==" ) comparison )* ;
     private Expression equality() {
-        Expression left = comparison();
+        if (match(BANG_EQUAL, EQUAL_EQUAL)) {
+            Token operator = advance();
+            comparison();
+            ParseError.error(operator, "Operation not supported: A left hand operand is expected");
+            return null;
+        }
 
+        Expression left = comparison();
         while (match(EQUAL_EQUAL, BANG_EQUAL)) {
             Token operator = previous();
             Expression right = comparison();
@@ -44,6 +50,13 @@ public class Parser {
 
     //    comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
     private Expression comparison() {
+        if (match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
+            Token operator = advance();
+            term();
+            ParseError.error(operator, "Operation not supported: A left hand operand is expected");
+            return null;
+        }
+
         Expression left = term();
         while (match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
             Token operator = previous();
@@ -55,8 +68,14 @@ public class Parser {
 
     //    term           → factor ( ( "-" | "+" ) factor )* ;
     private Expression term() {
-        Expression left = factor();
+        if (match(MINUS, PLUS)) {
+            Token operator = advance();
+            factor();
+            ParseError.error(operator, "Operation not supported: A left hand operand is expected");
+            return null;
+        }
 
+        Expression left = factor();
         while (match(PLUS, MINUS)) {
             Token operator = previous();
             Expression right = factor();
@@ -67,28 +86,58 @@ public class Parser {
 
     //    factor         → unary ( ( "/" | "*" ) unary )* ;
     private Expression factor() {
-        Expression left = Unary();
+        if (match(SLASH, STAR)) {
+            Token operator = advance();
+            unary();
+            ParseError.error(operator, "Operation not supported: A left hand operand is expected");
+            return null;
+        }
 
+        Expression left = unary();
         while (match(SLASH, STAR)) {
             Token operator = previous();
-            Expression right = Unary();
+            Expression right = unary();
             left = new Binary(left, operator, right);
         }
         return left;
     }
 
     //    unary          → ( "!" | "-" ) unary
-    //                   | primary ;
-    private Expression Unary() {
+    //                   | ternary ;
+    private Expression unary() {
         if (match(BANG, MINUS)) {
             Token operator = previous();
-            return new Unary(operator, primary());
+            return new Unary(operator, ternary());
         }
-        return primary();
+        return ternary();
+    }
+
+    //    ternary      -> comma ? expression : ternary
+    //                   | comma
+    private Expression ternary() {
+        Expression left = comma();
+        if (match(QMARK)) {
+            Expression middle = expression();
+            consume(COLON, "Expected token \":\"");
+            return new Ternary(left, middle, comma());
+        }
+        return left;
+    }
+
+
+    // comma            → primary ( ( "," ) primary )*
+    private Expression comma() {
+        Expression left = primary();
+        while (match(COMMA)) {
+            Token operator = previous();
+            Expression right = primary();
+            left = new Binary(left, operator, right);
+        }
+        return left;
     }
 
     //    primary        → NUMBER | STRING | "true" | "false" | "nil"
-    //            | "(" expression ")" ;
+    //                  | "(" expression ")" ;
     private Expression primary() {
         if (match(FALSE)) {
             return new Literal(false);
@@ -108,14 +157,14 @@ public class Parser {
             consume(RIGHT_PAREN, "Expected token \")\"");
             return new Grouping(expr);
         }
-        throw error(peek(), "Expected expression");
+        throw ParseError.error(peek(), "Expected expression");
     }
 
     private Token consume(TokenType tokenType, String errorMessage) {
         if (check(tokenType)) {
             return advance();
         }
-        throw error(peek(), errorMessage);
+        throw ParseError.error(peek(), errorMessage);
     }
 
     private boolean match(TokenType... tokenTypes) {
@@ -144,11 +193,6 @@ public class Parser {
 
     private Token previous() {
         return tokens.get(currentPos - 1);
-    }
-
-    private ParseError error(Token token, String message) {
-        Error.error(token, message);
-        return new ParseError();
     }
 
     private void synchronize() {

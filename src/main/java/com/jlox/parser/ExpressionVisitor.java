@@ -10,4 +10,6 @@ public interface ExpressionVisitor<R> {
 
     public R visit(Grouping expression);
 
+    public R visit(Ternary expression);
+
 }

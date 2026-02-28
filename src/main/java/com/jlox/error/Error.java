@@ -2,9 +2,9 @@ package com.jlox.error;
 
 import com.jlox.scanner.Token;
 
-import static com.jlox.scanner.Token.TokenType.*;
-
 import java.util.logging.Logger;
+
+import static com.jlox.scanner.Token.TokenType.EOF;
 
 public class Error {
     private static boolean hadError;
@@ -16,7 +16,7 @@ public class Error {
 
     public static void error(Token token, String message) {
         if (token.type() == EOF) {
-            report(token.line(), " at end" + token.lexeme() + "'", message);
+            report(token.line(), " at end", message);
         } else {
             report(token.line(), " at '" + token.lexeme() + "'", message);
         }

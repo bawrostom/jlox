@@ -29,6 +29,12 @@ public class RPN implements ExpressionVisitor<String> {
                 expression.expression());
     }
 
+    @Override
+    public String visit(Ternary expression) {
+        return parenthesize("?:",
+                expression.left(), expression.middle(), expression.right());
+    }
+
     public String parenthesize(String name, Expression... expressions) {
         StringBuilder string = new StringBuilder();
         for (Expression expression : expressions) {
