@@ -1,11 +1,15 @@
-package com.jlox;
+package com.jlox.scanner;
 
-import com.jlox.Token.TokenType;
+import com.jlox.error.Error;
+import com.jlox.scanner.Token.TokenType;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.jlox.scanner.Token.TokenType.*;
 
 public class Scanner {
 
@@ -14,12 +18,32 @@ public class Scanner {
     private int currentLexm = 0;
     private int currentPos = 0;
     private final List<Token> tokens;
-//    private char[] sourceChar;
+    private static final HashMap<String, TokenType> keywords;
+
+    static {
+        keywords = new HashMap<>();
+        keywords.put("and", AND);
+        keywords.put("class", CLASS);
+        keywords.put("else", ELSE);
+        keywords.put("false", FALSE);
+        keywords.put("for", FOR);
+        keywords.put("fun", FUN);
+        keywords.put("if", IF);
+        keywords.put("nil", NIL);
+        keywords.put("or", OR);
+        keywords.put("print", PRINT);
+        keywords.put("return", RETURN);
+        keywords.put("super", SUPER);
+        keywords.put("this", THIS);
+        keywords.put("true", TRUE);
+        keywords.put("var", VAR);
+        keywords.put("while", WHILE);
+    }
+
 
     public Scanner(String source) {
         this.source = source;
         this.tokens = new ArrayList<>();
-//        sourceChar = source.toCharArray();
     }
 
     public List<Token> scanTokens() {
@@ -27,6 +51,8 @@ public class Scanner {
             currentLexm = currentPos;
             scanToken();
         }
+        currentLexm = currentPos;
+        addToken(EOF);
         return tokens;
     }
 
@@ -47,46 +73,52 @@ public class Scanner {
         char c = nextChar();
         switch (c) {
             case '+':
-                addToken(TokenType.PLUS);
+                addToken(PLUS);
                 break;
             case '-':
-                addToken(TokenType.MINUS);
+                addToken(MINUS);
                 break;
             case '*':
-                addToken(TokenType.STAR);
+                addToken(STAR);
                 break;
             case '(':
-                addToken(TokenType.LEFT_PAREN);
+                addToken(LEFT_PAREN);
                 break;
             case ')':
-                addToken(TokenType.RIGHT_PAREN);
+                addToken(RIGHT_PAREN);
                 break;
             case '{':
-                addToken(TokenType.RIGHT_BRACE);
+                addToken(RIGHT_BRACE);
                 break;
             case '}':
-                addToken(TokenType.LEFT_BRACE);
+                addToken(LEFT_BRACE);
                 break;
             case '.':
-                addToken(TokenType.DOT);
+                addToken(DOT);
                 break;
             case ';':
-                addToken(TokenType.SEMICOLON);
+                addToken(SEMICOLON);
                 break;
             case ',':
-                addToken(TokenType.COMMA);
+                addToken(COMMA);
+                break;
+            case '?':
+                addToken(QMARK);
+                break;
+            case ':':
+                addToken(COLON);
                 break;
             case '!':
-                addToken(match('=') ? TokenType.BANG_EQUAL : TokenType.BANG);
+                addToken(match('=') ? BANG_EQUAL : BANG);
                 break;
             case '>':
-                addToken(match('=') ? TokenType.GREATER_EQUAL : TokenType.GREATER);
+                addToken(match('=') ? GREATER_EQUAL : GREATER);
                 break;
             case '<':
-                addToken(match('=') ? TokenType.LESS_EQUAL : TokenType.LESS);
+                addToken(match('=') ? LESS_EQUAL : LESS);
                 break;
             case '=':
-                addToken(match('=') ? TokenType.EQUAL_EQUAL : TokenType.EQUAL);
+                addToken(match('=') ? EQUAL_EQUAL : EQUAL);
                 break;
             case '/':
                 checkComment();
@@ -109,7 +141,7 @@ public class Scanner {
                     nextChar();
                 }
                 String stringLiteral = getSubString();
-                addToken(TokenType.STRING, stringLiteral);
+                addToken(STRING, stringLiteral);
                 break;
             default:
                 if (isDigit(c)) {
@@ -121,31 +153,39 @@ public class Scanner {
                         while (isDigit(peek()));
                     }
                     Double numberLiteral = Double.parseDouble(getSubString());
-                    addToken(TokenType.NUMBER, numberLiteral);
+                    addToken(NUMBER, numberLiteral);
+                } else if (isAlpha(c)) {
+                    identifier(c);
                 } else {
                     Error.error(line, "Unexpected character.");
                 }
 
         }
-//        List<Token> tokens = new ArrayLis
-//        t<>();
-//        TokenType token = null;
-//        int line = 0;
-//        String lexem = "";
-//        StringBuilder lexemStringBuilder = new StringBuilder();
-//
-//        for (char c : source.toCharArray()) {
-//            line += (c == '\n') ? 1 : 0;
-//            if (c == ' ') {
-//                lexem = lexemStringBuilder.toString();
-//                tokens.add(new Token(null, lexem, null, line));null
-//                lexemStringBuilder.delete(0, lexemStringBuilder.length());
-//                break;
-//            }
-//            lexemStringBuilder.append(c);
-//        }
-//        return tokens;
-//    }
+    }
+
+    private boolean isAlpha(char c) {
+        return (c >= 'a' && c <= 'z') ||
+                (c >= 'A' && c <= 'Z') ||
+                c == '_';
+    }
+
+    private boolean isDigit(char c) {
+        Pattern pattern = Pattern.compile("\\d");
+        Matcher matcher = pattern.matcher(Character.toString(c));
+        return matcher.find();
+    }
+
+    private boolean isAlphaNumeric(char c) {
+        return isAlpha(c) || isDigit(c);
+    }
+
+    private void identifier(char c) {
+        while (!end() && isAlphaNumeric(peek())) {
+            nextChar();
+        }
+        String lexm = source.substring(currentLexm, currentPos);
+        TokenType tokenType = keywords.get(lexm) == null ? IDENTIFIER : keywords.get(lexm);
+        addToken(tokenType, lexm);
     }
 
     private char nextChar() {
@@ -161,7 +201,7 @@ public class Scanner {
 
     private void checkComment() {
         if (end()) {
-            addToken(TokenType.SLASH);
+            addToken(SLASH);
             return;
         }
         char next = peek();
@@ -173,7 +213,7 @@ public class Scanner {
                 skipCommentLine();
                 break;
             default:
-                addToken(TokenType.SLASH);
+                addToken(SLASH);
         }
     }
 
@@ -214,12 +254,6 @@ public class Scanner {
     private char peekNextChar() {
         if (currentPos + 1 >= source.length()) return '\0';
         return source.charAt(currentPos + 1);
-    }
-
-    private boolean isDigit(char c) {
-        Pattern pattern = Pattern.compile("\\d");
-        Matcher matcher = pattern.matcher(Character.toString(c));
-        return matcher.find();
     }
 
     private String getSubString() {

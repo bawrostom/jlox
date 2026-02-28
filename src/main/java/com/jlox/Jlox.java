@@ -1,5 +1,10 @@
 package com.jlox;
 
+import com.jlox.error.Error;
+import com.jlox.parser.*;
+import com.jlox.scanner.Scanner;
+import com.jlox.scanner.Token;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -10,7 +15,6 @@ import java.util.List;
 
 public class Jlox {
     public static void main(String[] args) throws IOException {
-
         if (args.length > 1) {
             System.out.println("Usage: jlox [script]");
             System.exit(64);
@@ -26,7 +30,7 @@ public class Jlox {
         run(new String(inputFile, Charset.defaultCharset()));
 
         // Indicate an error in the exit code.
-        if (Error.getHandlerError()) System.exit(65);
+        if (com.jlox.error.Error.getHandlerError()) System.exit(65);
     }
 
     public static void runPrompt() throws IOException {
@@ -48,6 +52,14 @@ public class Jlox {
         // For now, just print the tokens.
         for (Token token : tokens) {
             System.out.println(token);
+        }
+        Parser parser = new Parser(tokens);
+        Expression expr = parser.parse();
+        if (Error.getHandlerError()) {
+            System.out.println("Syntax error");
+        } else {
+//            System.out.println(new AstPrinter().print(new Binary(new Literal(new Integer(6)), new Token(Token.TokenType.PLUS, "+", null, 0), new Literal(new Integer(10)))));
+            System.out.println(new AstPrinter().print(expr));
         }
     }
 }
