@@ -11,6 +11,7 @@ public record Token(TokenType type, String lexeme, Object literal, int line) {
         // Single-character tokens.
         LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,
         COMMA, DOT, MINUS, PLUS, SEMICOLON, SLASH, STAR,
+        QMARK, COLON,
 
         // One or two character tokens.
         BANG, BANG_EQUAL,

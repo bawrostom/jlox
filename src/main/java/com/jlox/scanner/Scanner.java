@@ -3,13 +3,13 @@ package com.jlox.scanner;
 import com.jlox.error.Error;
 import com.jlox.scanner.Token.TokenType;
 
-import static com.jlox.scanner.Token.TokenType.*;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.jlox.scanner.Token.TokenType.*;
 
 public class Scanner {
 
@@ -51,6 +51,7 @@ public class Scanner {
             currentLexm = currentPos;
             scanToken();
         }
+        currentLexm = currentPos;
         addToken(EOF);
         return tokens;
     }
@@ -100,6 +101,12 @@ public class Scanner {
                 break;
             case ',':
                 addToken(COMMA);
+                break;
+            case '?':
+                addToken(QMARK);
+                break;
+            case ':':
+                addToken(COLON);
                 break;
             case '!':
                 addToken(match('=') ? BANG_EQUAL : BANG);
@@ -162,17 +169,23 @@ public class Scanner {
                 c == '_';
     }
 
+    private boolean isDigit(char c) {
+        Pattern pattern = Pattern.compile("\\d");
+        Matcher matcher = pattern.matcher(Character.toString(c));
+        return matcher.find();
+    }
+
     private boolean isAlphaNumeric(char c) {
         return isAlpha(c) || isDigit(c);
     }
 
     private void identifier(char c) {
-        while (!end() && isAlphaNumeric(c)) {
+        while (!end() && isAlphaNumeric(peek())) {
             nextChar();
         }
         String lexm = source.substring(currentLexm, currentPos);
         TokenType tokenType = keywords.get(lexm) == null ? IDENTIFIER : keywords.get(lexm);
-        addToken(tokenType);
+        addToken(tokenType, lexm);
     }
 
     private char nextChar() {
@@ -241,12 +254,6 @@ public class Scanner {
     private char peekNextChar() {
         if (currentPos + 1 >= source.length()) return '\0';
         return source.charAt(currentPos + 1);
-    }
-
-    private boolean isDigit(char c) {
-        Pattern pattern = Pattern.compile("\\d");
-        Matcher matcher = pattern.matcher(Character.toString(c));
-        return matcher.find();
     }
 
     private String getSubString() {
