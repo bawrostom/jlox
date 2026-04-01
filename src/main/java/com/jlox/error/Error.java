@@ -8,6 +8,7 @@ import static com.jlox.scanner.Token.TokenType.EOF;
 
 public class Error {
     private static boolean hadError;
+    private static boolean hadRuntimeError;
     private static Logger logger = Logger.getLogger(Error.class.getName());
 
     public static void error(int line, String message) {
@@ -35,5 +36,15 @@ public class Error {
 
     public static void setHandlerError(boolean error) {
         hadError = error;
+    }
+
+    public static boolean getRuntimeHandlerError() {
+        return hadRuntimeError;
+    }
+
+    public static void runtimeError(RuntimeError error) {
+        System.err.println(error.getMessage() +
+                "\n[line " + error.token.line() + "]");
+        hadRuntimeError = true;
     }
 }
