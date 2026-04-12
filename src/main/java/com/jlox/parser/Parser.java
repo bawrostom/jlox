@@ -27,7 +27,28 @@ public class Parser {
 
     // expression -> equality
     private Expression expression() {
-        return equality();
+        return comma();
+    }
+
+    // comma            → ternary ( ( "," ) ternary )*
+    private Expression comma() {
+        Expression left = ternary();
+        while (match(COMMA)) {
+            left = ternary();
+        }
+        return left;
+    }
+
+    //    ternary      -> equality ? expression : ternary
+    //                   | equality
+    private Expression ternary() {
+        Expression left = equality();
+        if (match(QMARK)) {
+            Expression middle = expression();
+            consume(COLON, "Expected token \":\"");
+            return new Ternary(left, middle, ternary());
+        }
+        return left;
     }
 
     //    equality       → comparison ( ( "!=" | "==" ) comparison )* ;
@@ -68,8 +89,8 @@ public class Parser {
 
     //    term           → factor ( ( "-" | "+" ) factor )* ;
     private Expression term() {
-        if (match(MINUS, PLUS)) {
-            Token operator = advance();
+        if (match(PLUS)) {
+            Token operator = previous();
             factor();
             ParseError.error(operator, "Operation not supported: A left hand operand is expected");
             return null;
@@ -103,37 +124,13 @@ public class Parser {
     }
 
     //    unary          → ( "!" | "-" ) unary
-    //                   | ternary ;
+    //                   | primary ;
     private Expression unary() {
         if (match(BANG, MINUS)) {
             Token operator = previous();
-            return new Unary(operator, ternary());
+            return new Unary(operator, primary());
         }
-        return ternary();
-    }
-
-    //    ternary      -> comma ? expression : ternary
-    //                   | comma
-    private Expression ternary() {
-        Expression left = comma();
-        if (match(QMARK)) {
-            Expression middle = expression();
-            consume(COLON, "Expected token \":\"");
-            return new Ternary(left, middle, comma());
-        }
-        return left;
-    }
-
-
-    // comma            → primary ( ( "," ) primary )*
-    private Expression comma() {
-        Expression left = primary();
-        while (match(COMMA)) {
-            Token operator = previous();
-            Expression right = primary();
-            left = new Binary(left, operator, right);
-        }
-        return left;
+        return primary();
     }
 
     //    primary        → NUMBER | STRING | "true" | "false" | "nil"
