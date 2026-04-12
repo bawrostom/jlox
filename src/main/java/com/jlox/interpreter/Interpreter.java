@@ -1,10 +1,34 @@
 package com.jlox.interpreter;
 
+import com.jlox.error.Error;
 import com.jlox.error.RuntimeError;
 import com.jlox.parser.*;
 import com.jlox.scanner.Token;
 
 public class Interpreter implements ExpressionVisitor<Object> {
+
+    public void interpret(Expression expression) {
+        try {
+            Object value = expression.accept(this);
+            System.out.println(stringify(value));
+        } catch (RuntimeError e) {
+            Error.runtimeError(e);
+        }
+
+    }
+
+    private String stringify(Object value) {
+        if (value == null) return "nil";
+        if (value instanceof Double) {
+            String text = value.toString();
+            if (text.endsWith(".0")) {
+                text = text.substring(0, text.length() - 2);
+            }
+            return text;
+        }
+        return value.toString();
+    }
+
     @Override
     public Object visit(Binary expression) {
         Object left = expression.left().accept(this);
@@ -73,9 +97,9 @@ public class Interpreter implements ExpressionVisitor<Object> {
         return null;
     }
 
-    private boolean checkNumberOperand(Token operator, Object... operands) {
-        for (Object operand : operands) if (!(operand instanceof Double)) return false;
-        throw new RuntimeError(operator, "Operand must be a number");
+    private void checkNumberOperand(Token operator, Object... operands) {
+        for (Object operand : operands)
+            if (!(operand instanceof Double)) throw new RuntimeError(operator, "Operand must be a number");
     }
 
     @Override
@@ -85,7 +109,14 @@ public class Interpreter implements ExpressionVisitor<Object> {
 
     @Override
     public Object visit(Ternary expression) {
-        return null;
+        Object left = expression.left().accept(this);
+        Object middle = expression.middle().accept(this);
+        Object right = expression.right().accept(this);
+
+        if (isTruthy(left)) {
+            return middle;
+        }
+        return right;
     }
 
     private boolean isTruthy(Object right) {

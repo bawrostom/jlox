@@ -1,7 +1,9 @@
 package com.jlox;
 
 import com.jlox.error.Error;
-import com.jlox.parser.*;
+import com.jlox.interpreter.Interpreter;
+import com.jlox.parser.Expression;
+import com.jlox.parser.Parser;
 import com.jlox.scanner.Scanner;
 import com.jlox.scanner.Token;
 
@@ -30,7 +32,8 @@ public class Jlox {
         run(new String(inputFile, Charset.defaultCharset()));
 
         // Indicate an error in the exit code.
-        if (com.jlox.error.Error.getHandlerError()) System.exit(65);
+        if (Error.getHandlerError()) System.exit(65);
+        if (Error.getRuntimeHandlerError()) System.exit(70);
     }
 
     public static void runPrompt() throws IOException {
@@ -57,9 +60,13 @@ public class Jlox {
         Expression expr = parser.parse();
         if (Error.getHandlerError()) {
             System.out.println("Syntax error");
+            return;
         } else {
 //            System.out.println(new AstPrinter().print(new Binary(new Literal(new Integer(6)), new Token(Token.TokenType.PLUS, "+", null, 0), new Literal(new Integer(10)))));
-            System.out.println(new AstPrinter().print(expr));
+//            System.out.println(new AstPrinter().print(expr));
         }
+
+        Interpreter interpreter = new Interpreter();
+        interpreter.interpret(expr);
     }
 }
