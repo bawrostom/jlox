@@ -57,16 +57,16 @@ public class Scanner {
     }
 
     public void addToken(TokenType type) {
-        addToken(type, null);
+        String lexem = source.substring(currentLexm, currentPos);
+        addToken(type, lexem, null);
     }
 
     public boolean end() {
         return currentPos >= source.length();
     }
 
-    public void addToken(TokenType type, Object literal) {
-        String lexm = source.substring(currentLexm, currentPos);
-        tokens.add(new Token(type, lexm, literal, line));
+    public void addToken(TokenType type, String lexem, Object literal) {
+        tokens.add(new Token(type, lexem, literal, line));
     }
 
     public void scanToken() {
@@ -140,8 +140,8 @@ public class Scanner {
                     }
                     nextChar();
                 }
-                String stringLiteral = getSubString();
-                addToken(STRING, stringLiteral);
+                String stringLiteral = source.substring(currentLexm + 1, currentPos - 1);
+                addToken(STRING, stringLiteral, stringLiteral);
                 break;
             default:
                 if (isDigit(c)) {
@@ -152,8 +152,9 @@ public class Scanner {
                         do nextChar();
                         while (isDigit(peek()));
                     }
-                    Double numberLiteral = Double.parseDouble(getSubString());
-                    addToken(NUMBER, numberLiteral);
+                    String lexem = source.substring(currentLexm, currentPos);
+                    Double numberLiteral = Double.parseDouble(lexem);
+                    addToken(NUMBER, lexem, numberLiteral);
                 } else if (isAlpha(c)) {
                     identifier(c);
                 } else {
@@ -183,9 +184,9 @@ public class Scanner {
         while (!end() && isAlphaNumeric(peek())) {
             nextChar();
         }
-        String lexm = source.substring(currentLexm, currentPos);
-        TokenType tokenType = keywords.get(lexm) == null ? IDENTIFIER : keywords.get(lexm);
-        addToken(tokenType, lexm);
+        String lexem = source.substring(currentLexm, currentPos);
+        TokenType tokenType = keywords.get(lexem) == null ? IDENTIFIER : keywords.get(lexem);
+        addToken(tokenType, lexem, lexem);
     }
 
     private char nextChar() {
@@ -254,9 +255,5 @@ public class Scanner {
     private char peekNextChar() {
         if (currentPos + 1 >= source.length()) return '\0';
         return source.charAt(currentPos + 1);
-    }
-
-    private String getSubString() {
-        return source.substring(currentLexm, currentPos);
     }
 }

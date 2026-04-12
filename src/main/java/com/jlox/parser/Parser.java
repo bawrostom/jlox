@@ -139,18 +139,11 @@ public class Parser {
     //    primary        → NUMBER | STRING | "true" | "false" | "nil"
     //                  | "(" expression ")" ;
     private Expression primary() {
-        if (match(FALSE)) {
-            return new Literal(false);
-        }
-        if (match(TRUE)) {
-            return new Literal(true);
-        }
-        if (match(NIL)) {
-            return new Literal(null);
-        }
-        if (match(STRING, NUMBER)) {
-            return new Literal(previous().lexeme());
-        }
+        if (match(FALSE)) return new Literal(false);
+        if (match(TRUE)) return new Literal(true);
+        if (match(NIL)) return new Literal(null);
+        if (match(STRING)) return new Literal(previous().lexeme());
+        if (match(NUMBER)) return new Literal(Double.parseDouble(previous().lexeme()));
 
         if (match(LEFT_PAREN)) {
             Expression expr = expression();
