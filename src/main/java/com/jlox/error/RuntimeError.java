@@ -5,8 +5,8 @@ import com.jlox.scanner.Token;
 public class RuntimeError extends RuntimeException {
     final Token token;
 
-    public RuntimeError(Token tokenType, String message) {
+    public RuntimeError(Token token, String message) {
         super(message);
-        this.token = tokenType;
+        this.token = token;
     }
 }

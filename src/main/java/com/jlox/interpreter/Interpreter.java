@@ -2,6 +2,7 @@ package com.jlox.interpreter;
 
 import com.jlox.error.Error;
 import com.jlox.error.RuntimeError;
+import com.jlox.error.ZeroDivisionError;
 import com.jlox.parser.*;
 import com.jlox.scanner.Token;
 
@@ -41,6 +42,8 @@ public class Interpreter implements ExpressionVisitor<Object> {
                     return (double) left + (double) right;
                 } else if (left instanceof String && right instanceof String) {
                     return (String) left + right;
+                } else if (left instanceof String || right instanceof String) {
+                    return String.valueOf(left) + String.valueOf(right);
                 }
                 throw new RuntimeError(operator, "Operands must be two numbers or two strings.");
             case MINUS:
@@ -51,7 +54,11 @@ public class Interpreter implements ExpressionVisitor<Object> {
                 return (double) left * (double) right;
             case SLASH:
                 checkNumberOperand(operator, left, right);
-                return (double) left / (double) right;
+                double result = ((double) left / (double) right);
+                if (Double.isNaN(result) || Double.isInfinite(result)) {
+                    throw new ZeroDivisionError(expression.operator());
+                }
+                return result;
             case GREATER:
                 checkNumberOperand(operator, left, right);
                 return (double) left > (double) right;
