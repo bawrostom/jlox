@@ -6,12 +6,12 @@ import com.jlox.error.ZeroDivisionError;
 import com.jlox.parser.*;
 import com.jlox.scanner.Token;
 
-public class Interpreter implements ExpressionVisitor<Object> {
+public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<Void> {
 
-    public void interpret(Expression expression) {
+    public void interpret(Statement statement) {
         try {
-            Object value = expression.accept(this);
-            System.out.println(stringify(value));
+            Object value = statement.accept(this);
+//            System.out.println(stringify(value));
         } catch (RuntimeError e) {
             Error.runtimeError(e);
         }
@@ -134,5 +134,20 @@ public class Interpreter implements ExpressionVisitor<Object> {
             return (boolean) right;
         }
         return true;
+    }
+
+    @Override
+    public Void visit(ExpressionStmnt statement) {
+        return statement.accept(this);
+    }
+
+    @Override
+    public Void visit(PrintStmnt statement) {
+        Object expr = statement.expression().accept(this);
+        if (expr instanceof String || expr instanceof Interpreter || expr instanceof Double) {
+            System.out.print(expr);
+        }
+//        throw new RuntimeError(null, "Operands must be two numbers or two strings.");
+        return null;
     }
 }

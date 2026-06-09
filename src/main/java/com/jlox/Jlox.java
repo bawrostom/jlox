@@ -1,9 +1,10 @@
 package com.jlox;
 
 import com.jlox.error.Error;
+import com.jlox.error.ParseError;
 import com.jlox.interpreter.Interpreter;
-import com.jlox.parser.Expression;
 import com.jlox.parser.Parser;
+import com.jlox.parser.Statement;
 import com.jlox.scanner.Scanner;
 import com.jlox.scanner.Token;
 
@@ -57,7 +58,12 @@ public class Jlox {
             System.out.println(token);
         }
         Parser parser = new Parser(tokens);
-        Expression expr = parser.parse();
+        List<Statement> statements = null;
+        try {
+            statements = parser.parse();
+        } catch (ParseError e) {
+            e.printStackTrace();
+        }
         if (Error.getHandlerError()) {
             System.out.println("Syntax error");
             return;
@@ -67,6 +73,10 @@ public class Jlox {
         }
 
         Interpreter interpreter = new Interpreter();
-        interpreter.interpret(expr);
+        for (Statement stmt : statements) {
+            if (stmt != null) {
+                interpreter.interpret(stmt);
+            }
+        }
     }
 }

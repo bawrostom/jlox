@@ -3,6 +3,7 @@ package com.jlox.parser;
 import com.jlox.error.ParseError;
 import com.jlox.scanner.Token;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.jlox.scanner.Token.TokenType;
@@ -17,13 +18,33 @@ public class Parser {
         this.tokens = tokens;
     }
 
-    public Expression parse() {
-        try {
-            return expression();
-        } catch (ParseError e) {
-            return null;
+    public List<Statement> parse() {
+        List<Statement> statements = new ArrayList<>();
+        while (!end()) {
+            statements.add(statement());
         }
+        return statements;
     }
+
+    private Statement statement() {
+        if (match(PRINT)) {
+            return printStatment();
+        }
+        return expressionStatement();
+    }
+
+    private Statement expressionStatement() {
+        Expression expr = expression();
+        consume(SEMICOLON, "Expected ';' after value.");
+        return new ExpressionStmnt(expr);
+    }
+
+    private Statement printStatment() {
+        Expression expr = expression();
+        consume(SEMICOLON, "Expected ';' after value.");
+        return new PrintStmnt(expr);
+    }
+
 
     // expression -> equality
     private Expression expression() {
@@ -207,7 +228,7 @@ public class Parser {
     }
 
     private boolean end() {
-        return (currentPos >= tokens.size());
+        return tokens.get(currentPos).type().equals(EOF);
     }
 
 }
