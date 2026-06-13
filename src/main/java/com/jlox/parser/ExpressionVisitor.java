@@ -12,4 +12,6 @@ public interface ExpressionVisitor<R> {
 
     public R visit(Ternary expression);
 
+    public R visit(Variable expression);
+
 }

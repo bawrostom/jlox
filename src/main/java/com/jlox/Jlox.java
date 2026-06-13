@@ -17,6 +17,9 @@ import java.nio.file.Paths;
 import java.util.List;
 
 public class Jlox {
+
+    private static final Interpreter interpreter = new Interpreter();
+
     public static void main(String[] args) throws IOException {
         if (args.length > 1) {
             System.out.println("Usage: jlox [script]");
@@ -72,7 +75,6 @@ public class Jlox {
 //            System.out.println(new AstPrinter().print(expr));
         }
 
-        Interpreter interpreter = new Interpreter();
         for (Statement stmt : statements) {
             if (stmt != null) {
                 interpreter.interpret(stmt);

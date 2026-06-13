@@ -6,5 +6,6 @@ public interface StatementVisitor<R> {
 
     public R visit(PrintStmnt statement);
 
+    public R visit(VarStmnt statement);
 }
 

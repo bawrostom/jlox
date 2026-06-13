@@ -8,6 +8,8 @@ import com.jlox.scanner.Token;
 
 public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<Void> {
 
+    private Environment env = new Environment();
+
     public void interpret(Statement statement) {
         try {
             Object value = statement.accept(this);
@@ -138,7 +140,8 @@ public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<
 
     @Override
     public Void visit(ExpressionStmnt statement) {
-        return statement.accept(this);
+        statement.expression().accept(this);
+        return null;
     }
 
     @Override
@@ -149,5 +152,20 @@ public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<
         }
 //        throw new RuntimeError(null, "Operands must be two numbers or two strings.");
         return null;
+    }
+
+    @Override
+    public Void visit(VarStmnt statement) {
+        Object val = null;
+        if (statement.initializer() != null) {
+            val = statement.initializer().accept(this);
+        }
+        env.define(statement.name().lexeme(), val);
+        return null;
+    }
+
+    @Override
+    public Object visit(Variable expression) {
+        return env.get(expression.name());
     }
 }

@@ -34,6 +34,11 @@ public class AstPrinter implements ExpressionVisitor<String> {
                 expression.left(), expression.middle(), expression.right());
     }
 
+    @Override
+    public String visit(Variable expression) {
+        return expression.name().lexeme();
+    }
+
 
     public String parenthesize(String name, Expression... expressions) {
         StringBuilder string = new StringBuilder();

@@ -19,7 +19,8 @@ public record Token(TokenType type, String lexeme, Object literal, int line) {
         GREATER, GREATER_EQUAL,
         LESS, LESS_EQUAL,
 
-        IDENTIFIER, STRING, NUMBER,
+        IDENTIFIER,
+        STRING, NUMBER,
 
         // Keywords.
         AND, CLASS, ELSE, FALSE, FUN, FOR, IF, NIL, OR,

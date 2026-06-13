@@ -21,9 +21,31 @@ public class Parser {
     public List<Statement> parse() {
         List<Statement> statements = new ArrayList<>();
         while (!end()) {
-            statements.add(statement());
+            statements.add(varDeclaration());
         }
         return statements;
+    }
+
+    public Statement varDeclaration() {
+        try {
+            if (match(VAR)) {
+                return varStatement();
+            }
+            return statement();
+        } catch (ParseError e) {
+            synchronize();
+            return null;
+        }
+    }
+
+    private Statement varStatement() {
+        Token name = consume(IDENTIFIER, "Expected an identifier after var key word");
+        Expression initializer = null;
+        if (advance().type() == EQUAL) {
+            initializer = expression();
+        }
+        consume(SEMICOLON, "Expected ';' after value.");
+        return new VarStmnt(name, initializer);
     }
 
     private Statement statement() {
@@ -155,13 +177,15 @@ public class Parser {
     }
 
     //    primary        → NUMBER | STRING | "true" | "false" | "nil"
-    //                  | "(" expression ")" ;
+    //                  | "(" expression ")"
+    //                  | IDENTIFIER;
     private Expression primary() {
         if (match(FALSE)) return new Literal(false);
         if (match(TRUE)) return new Literal(true);
         if (match(NIL)) return new Literal(null);
         if (match(STRING)) return new Literal(previous().lexeme());
         if (match(NUMBER)) return new Literal(Double.parseDouble(previous().lexeme()));
+        if (match(IDENTIFIER)) return new Variable(previous());
 
         if (match(LEFT_PAREN)) {
             Expression expr = expression();
