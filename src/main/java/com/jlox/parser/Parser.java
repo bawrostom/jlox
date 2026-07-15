@@ -41,7 +41,8 @@ public class Parser {
     private Statement varStatement() {
         Token name = consume(IDENTIFIER, "Expected an identifier after var key word");
         Expression initializer = null;
-        if (advance().type() == EQUAL) {
+        if (check(EQUAL)) {
+            advance();
             initializer = expression();
         }
         consume(SEMICOLON, "Expected ';' after value.");
@@ -73,13 +74,29 @@ public class Parser {
         return comma();
     }
 
-    // comma            → ternary ( ( "," ) ternary )*
+    // comma            → assignment ( ( "," ) assignment )*
     private Expression comma() {
-        Expression left = ternary();
+        Expression left = assignment();
         while (match(COMMA)) {
-            left = ternary();
+            left = assignment();
         }
         return left;
+    }
+
+    //    assignment     → ternary ( ("=") assignment)?
+    private Expression assignment() {
+        Expression expression = ternary();
+        if (match(EQUAL)) {
+            Token equals = previous();
+            Expression value = assignment();
+
+            if (expression instanceof Variable) {
+                Token name = ((Variable) expression).name();
+                return new Assign(name, value);
+            }
+            ParseError.error(equals, "Invalid assignment target.");
+        }
+        return expression;
     }
 
     //    ternary      -> equality ? expression : ternary

@@ -168,4 +168,11 @@ public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<
     public Object visit(Variable expression) {
         return env.get(expression.name());
     }
+
+    @Override
+    public Object visit(Assign expression) {
+        Object value = expression.value().accept(this);
+        env.assign(expression.name(), value);
+        return value;
+    }
 }
