@@ -53,8 +53,12 @@ public class Parser {
         if (match(PRINT)) {
             return printStatment();
         }
+        if (match(LEFT_BRACE)) {
+            return new BlockStmnt(block());
+        }
         return expressionStatement();
     }
+
 
     private Statement expressionStatement() {
         Expression expr = expression();
@@ -68,6 +72,14 @@ public class Parser {
         return new PrintStmnt(expr);
     }
 
+    private List<Statement> block() {
+        List<Statement> statements = new ArrayList<>();
+        while (!check(RIGHT_BRACE) && !end()) {
+            statements.add(varDeclaration());
+        }
+        consume(RIGHT_BRACE, "Expected '}' after value.");
+        return statements;
+    }
 
     // expression -> equality
     private Expression expression() {

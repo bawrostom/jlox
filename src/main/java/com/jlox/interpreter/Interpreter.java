@@ -6,6 +6,8 @@ import com.jlox.error.ZeroDivisionError;
 import com.jlox.parser.*;
 import com.jlox.scanner.Token;
 
+import java.util.List;
+
 public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<Void> {
 
     private Environment env = new Environment();
@@ -162,6 +164,24 @@ public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<
         }
         env.define(statement.name().lexeme(), val);
         return null;
+    }
+
+    @Override
+    public Void visit(BlockStmnt blockStatement) {
+        executeBlock(blockStatement.statements(), new Environment(env));
+        return null;
+    }
+
+    private void executeBlock(List<Statement> statements, Environment environment) {
+        Environment previous = this.env;
+        try {
+            this.env = environment;
+            for (Statement statement : statements) {
+                statement.accept(this);
+            }
+        } finally {
+            this.env = previous;
+        }
     }
 
     @Override

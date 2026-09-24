@@ -9,7 +9,9 @@ public record Token(TokenType type, String lexeme, Object literal, int line) {
 
     public enum TokenType {
         // Single-character tokens.
-        LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,
+        LEFT_PAREN, RIGHT_PAREN,
+        LEFT_BRACE,
+        RIGHT_BRACE,
         COMMA, DOT, MINUS, PLUS, SEMICOLON, SLASH, STAR,
         QMARK, COLON,
 

@@ -88,10 +88,10 @@ public class Scanner {
                 addToken(RIGHT_PAREN);
                 break;
             case '{':
-                addToken(RIGHT_BRACE);
+                addToken(LEFT_BRACE);
                 break;
             case '}':
-                addToken(LEFT_BRACE);
+                addToken(RIGHT_BRACE);
                 break;
             case '.':
                 addToken(DOT);
