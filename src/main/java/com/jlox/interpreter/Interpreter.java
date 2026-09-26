@@ -8,22 +8,21 @@ import com.jlox.scanner.Token;
 
 import java.util.List;
 
-public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<Void> {
+public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<Object> {
 
     private Environment env = new Environment();
 
     public void interpret(Statement statement) {
         try {
             Object value = statement.accept(this);
-//            System.out.println(stringify(value));
+            System.out.println(stringify(value));
         } catch (RuntimeError e) {
             Error.runtimeError(e);
         }
-
     }
 
     private String stringify(Object value) {
-        if (value == null) return "nil";
+        if (value == null) return "";
         if (value instanceof Double) {
             String text = value.toString();
             if (text.endsWith(".0")) {
@@ -141,9 +140,8 @@ public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<
     }
 
     @Override
-    public Void visit(ExpressionStmnt statement) {
-        statement.expression().accept(this);
-        return null;
+    public Object visit(ExpressionStmnt statement) {
+        return statement.expression().accept(this);
     }
 
     @Override
