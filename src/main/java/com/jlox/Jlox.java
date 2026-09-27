@@ -77,7 +77,9 @@ public class Jlox {
 
         for (Statement stmt : statements) {
             if (stmt != null) {
-                interpreter.interpret(stmt);
+                Object value = interpreter.interpret(stmt);
+                String str = interpreter.stringify(value);
+                if (!str.equals("nil")) System.out.println(str);
             }
         }
     }

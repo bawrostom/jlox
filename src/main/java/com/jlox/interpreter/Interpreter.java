@@ -12,17 +12,19 @@ public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<
 
     private Environment env = new Environment();
 
-    public void interpret(Statement statement) {
+    public Object interpret(Statement statement) {
         try {
             Object value = statement.accept(this);
-            System.out.println(stringify(value));
+//           System.out.println(stringify(value));
+            return value;
         } catch (RuntimeError e) {
             Error.runtimeError(e);
         }
+        return null;
     }
 
-    private String stringify(Object value) {
-        if (value == null) return "";
+    public String stringify(Object value) {
+        if (value == null) return "nil";
         if (value instanceof Double) {
             String text = value.toString();
             if (text.endsWith(".0")) {
