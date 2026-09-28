@@ -50,15 +50,11 @@ public class Parser {
     }
 
     private Statement statement() {
-        if (match(PRINT)) {
-            return printStatment();
-        }
-        if (match(LEFT_BRACE)) {
-            return new BlockStmnt(block());
-        }
+        if (match(PRINT)) return printStatment();
+        if (match(LEFT_BRACE)) return new BlockStmnt(block());
+        if (match(IF)) return ifStatement();
         return expressionStatement();
     }
-
 
     private Statement expressionStatement() {
         Expression expr = expression();
@@ -79,6 +75,18 @@ public class Parser {
         }
         consume(RIGHT_BRACE, "Expected '}' after value.");
         return statements;
+    }
+
+    private Statement ifStatement() {
+        consume(LEFT_PAREN, "Expected '(' after 'if'.");
+        Expression condition = expression();
+        consume(RIGHT_PAREN, "Expected ')' after expression.");
+        Statement thenStatement = statement();
+        Statement branchStatement = null;
+        if (match(ELSE)) {
+            branchStatement = statement();
+        }
+        return new IfStatmnt(condition, thenStatement, branchStatement);
     }
 
     // expression -> equality

@@ -9,5 +9,7 @@ public interface StatementVisitor<R> {
     public R visit(VarStmnt statement);
 
     public R visit(BlockStmnt statement);
+
+    public R visit(IfStatmnt statement);
 }
 

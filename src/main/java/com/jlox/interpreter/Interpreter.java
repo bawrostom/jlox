@@ -172,6 +172,17 @@ public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<
         return null;
     }
 
+    @Override
+    public Object visit(IfStatmnt statement) {
+        Object condition = statement.condition().accept(this);
+        if (isTruthy(condition)) {
+            statement.thenBranch().accept(this);
+        } else if (statement.elseBranch() != null) {
+            statement.elseBranch().accept(this);
+        }
+        return null;
+    }
+
     private void executeBlock(List<Statement> statements, Environment environment) {
         Environment previous = this.env;
         try {
