@@ -119,10 +119,10 @@ public class Parser {
         return expression;
     }
 
-    //    ternary      -> equality ? expression : ternary
-    //                   | equality
+    //    ternary      -> logical_or ? expression : ternary
+    //                   | logical_or
     private Expression ternary() {
-        Expression left = equality();
+        Expression left = logical_or();
         if (match(QMARK)) {
             Expression middle = expression();
             consume(COLON, "Expected token \":\"");
@@ -131,9 +131,46 @@ public class Parser {
         return left;
     }
 
+    //    logical_or       → logical_end ( ( "||" ) logical_end )* ;
+    private Expression logical_or() {
+        if (match(OR)) {
+            Token operator = advance();
+            logical_end();
+            ParseError.error(operator, "Operation not supported: A left hand operand is expected");
+            return null;
+        }
+
+        Expression left = logical_end();
+        while (match(OR)) {
+            Token operator = previous();
+            Expression right = logical_end();
+            left = new Binary(left, operator, right);
+        }
+        return left;
+    }
+
+    //    logical_end       → equality ( ( "&&" ) equality )* ;
+    private Expression logical_end() {
+        if (match(AND)) {
+            Token operator = advance();
+            equality();
+            ParseError.error(operator, "Operation not supported: A left hand operand is expected");
+            return null;
+        }
+
+        Expression left = equality();
+        while (match(AND)) {
+            Token operator = previous();
+            Expression right = equality();
+            left = new Binary(left, operator, right);
+        }
+        return left;
+    }
+
     //    equality       → comparison ( ( "!=" | "==" ) comparison )* ;
     private Expression equality() {
         if (match(BANG_EQUAL, EQUAL_EQUAL)) {
+            // Sync point
             Token operator = advance();
             comparison();
             ParseError.error(operator, "Operation not supported: A left hand operand is expected");
@@ -152,6 +189,7 @@ public class Parser {
     //    comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
     private Expression comparison() {
         if (match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
+            // Sync point
             Token operator = advance();
             term();
             ParseError.error(operator, "Operation not supported: A left hand operand is expected");
@@ -170,6 +208,7 @@ public class Parser {
     //    term           → factor ( ( "-" | "+" ) factor )* ;
     private Expression term() {
         if (match(PLUS)) {
+            // Sync point
             Token operator = previous();
             factor();
             ParseError.error(operator, "Operation not supported: A left hand operand is expected");
@@ -188,6 +227,7 @@ public class Parser {
     //    factor         → unary ( ( "/" | "*" ) unary )* ;
     private Expression factor() {
         if (match(SLASH, STAR)) {
+            // Sync point
             Token operator = advance();
             unary();
             ParseError.error(operator, "Operation not supported: A left hand operand is expected");

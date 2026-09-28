@@ -80,6 +80,10 @@ public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<
                 return !isEqual(left, right);
             case EQUAL_EQUAL:
                 return isEqual(left, right);
+            case OR:
+                return isTruthy(left) || isTruthy(right);
+            case AND:
+                return isTruthy(left) && isTruthy(right);
         }
         return null;
     }
