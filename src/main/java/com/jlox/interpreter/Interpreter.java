@@ -8,6 +8,8 @@ import com.jlox.scanner.Token;
 
 import java.util.List;
 
+import static com.jlox.scanner.Token.TokenType.OR;
+
 public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<Object> {
 
     private Environment env = new Environment();
@@ -80,10 +82,6 @@ public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<
                 return !isEqual(left, right);
             case EQUAL_EQUAL:
                 return isEqual(left, right);
-            case OR:
-                return isTruthy(left) || isTruthy(right);
-            case AND:
-                return isTruthy(left) && isTruthy(right);
         }
         return null;
     }
@@ -209,5 +207,17 @@ public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<
         Object value = expression.value().accept(this);
         env.assign(expression.name(), value);
         return value;
+    }
+
+    @Override
+    public Object visit(Logical expression) {
+        Object left = expression.left().accept(this);
+        Token operator = expression.operator();
+
+        if (operator.type() == OR) {
+            if (isTruthy(expression.left())) return left;
+        } else if (!isTruthy(expression.left())) return left;
+
+        return expression.right().accept(this);
     }
 }

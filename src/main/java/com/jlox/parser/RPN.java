@@ -45,6 +45,12 @@ public class RPN implements ExpressionVisitor<String> {
         return expression.name().lexeme();
     }
 
+    @Override
+    public String visit(Logical expression) {
+        return parenthesize(expression.operator().lexeme(),
+                expression.left(), expression.left());
+    }
+
     public String parenthesize(String name, Expression... expressions) {
         StringBuilder string = new StringBuilder();
         for (Expression expression : expressions) {
