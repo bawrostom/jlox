@@ -53,6 +53,7 @@ public class Parser {
         if (match(PRINT)) return printStatment();
         if (match(LEFT_BRACE)) return new BlockStmnt(block());
         if (match(IF)) return ifStatement();
+        if (match(WHILE)) return whileStatement();
         return expressionStatement();
     }
 
@@ -66,6 +67,14 @@ public class Parser {
         Expression expr = expression();
         consume(SEMICOLON, "Expected ';' after value.");
         return new PrintStmnt(expr);
+    }
+
+    private Statement whileStatement() {
+        consume(LEFT_PAREN, "Expected '(' after 'if'.");
+        Expression condition = expression();
+        consume(RIGHT_PAREN, "Expected ')' after expression.");
+        Statement body = statement();
+        return new WhileStmnt(condition, body);
     }
 
     private List<Statement> block() {

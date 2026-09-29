@@ -185,6 +185,15 @@ public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<
         return null;
     }
 
+    @Override
+    public Void visit(WhileStmnt whileStmnt) {
+        Expression condition = whileStmnt.condition();
+        while (isTruthy(condition.accept(this))) {
+            whileStmnt.body().accept(this);
+        }
+        return null;
+    }
+
     private void executeBlock(List<Statement> statements, Environment environment) {
         Environment previous = this.env;
         try {
