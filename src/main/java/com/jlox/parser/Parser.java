@@ -4,6 +4,7 @@ import com.jlox.error.ParseError;
 import com.jlox.scanner.Token;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.jlox.scanner.Token.TokenType;
@@ -54,7 +55,42 @@ public class Parser {
         if (match(LEFT_BRACE)) return new BlockStmnt(block());
         if (match(IF)) return ifStatement();
         if (match(WHILE)) return whileStatement();
+        if (match(FOR)) return forStatement();
         return expressionStatement();
+    }
+
+    private Statement forStatement() {
+        consume(LEFT_PAREN, "Expected '(' after 'for'.");
+        Statement initializer;
+        if (match(SEMICOLON)) {
+            initializer = null;
+        } else if (match(VAR)) {
+            initializer = varStatement();
+        } else {
+            initializer = expressionStatement();
+        }
+        Expression condition = null;
+        if (!check(SEMICOLON)) {
+            condition = expression();
+        }
+        consume(SEMICOLON, "Expected ';' after value.");
+
+        Expression increment = null;
+        if (!check(RIGHT_PAREN)) {
+            increment = expression();
+        }
+        consume(RIGHT_PAREN, "Expected ')' after value.");
+
+        Statement body = statement();
+
+        if (increment != null) {
+            body = new BlockStmnt(Arrays.asList(body, new ExpressionStmnt(increment)));
+        }
+        if (condition == null) condition = new Literal(true);
+        body = new WhileStmnt(condition, body);
+
+        if (initializer != null) body = new BlockStmnt(Arrays.asList(initializer, body));
+        return body;
     }
 
     private Statement expressionStatement() {
