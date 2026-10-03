@@ -56,6 +56,7 @@ public class Parser {
         if (match(IF)) return ifStatement();
         if (match(WHILE)) return whileStatement();
         if (match(FOR)) return forStatement();
+        if (match(BREAK)) return breakStatement();
         return expressionStatement();
     }
 
@@ -132,6 +133,12 @@ public class Parser {
             branchStatement = statement();
         }
         return new IfStatmnt(condition, thenStatement, branchStatement);
+    }
+
+    private Statement breakStatement() {
+        Token token = previous();
+        consume(SEMICOLON, "Expected ';' after break.");
+        return new BreakStmnt(token);
     }
 
     // expression -> equality

@@ -14,6 +14,10 @@ public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<
 
     private Environment env = new Environment();
 
+    private boolean whileFlag;
+    private boolean breakFlag;
+
+
     public Object interpret(Statement statement) {
         try {
             Object value = statement.accept(this);
@@ -187,11 +191,26 @@ public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<
 
     @Override
     public Void visit(WhileStmnt whileStmnt) {
+        whileFlag = true;
         Expression condition = whileStmnt.condition();
         while (isTruthy(condition.accept(this))) {
             whileStmnt.body().accept(this);
+            if (breakFlag) {
+                breakFlag = false;
+                break;
+            }
         }
+        whileFlag = false;
         return null;
+    }
+
+    @Override
+    public Object visit(BreakStmnt breakStmnt) {
+        if (whileFlag) {
+            breakFlag = true;
+            return null;
+        }
+        throw new RuntimeError(breakStmnt.token(), "Unexpected 'break' statement");
     }
 
     private void executeBlock(List<Statement> statements, Environment environment) {

@@ -13,5 +13,7 @@ public interface StatementVisitor<R> {
     public R visit(IfStatmnt statement);
 
     public R visit(WhileStmnt whileStmnt);
+
+    public R visit(BreakStmnt breakStmnt);
 }
 
