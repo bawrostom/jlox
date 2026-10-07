@@ -156,7 +156,7 @@ public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<
     public Void visit(PrintStmnt statement) {
         Object expr = statement.expression().accept(this);
         if (expr instanceof String || expr instanceof Interpreter || expr instanceof Double) {
-            System.out.print(expr);
+            System.out.println(expr);
         }
 //        throw new RuntimeError(null, "Operands must be two numbers or two strings.");
         return null;
