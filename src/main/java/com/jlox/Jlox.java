@@ -19,14 +19,17 @@ import java.util.List;
 public class Jlox {
 
     private static final Interpreter interpreter = new Interpreter();
+    private static boolean repl;
 
     public static void main(String[] args) throws IOException {
         if (args.length > 1) {
             System.out.println("Usage: jlox [script]");
             System.exit(64);
         } else if (args.length == 1) {
+            repl = false;
             runFile(args[0]);
         } else {
+            repl = true;
             runPrompt();
         }
     }
@@ -55,7 +58,7 @@ public class Jlox {
     private static void run(String source) {
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
-        
+
         Parser parser = new Parser(tokens);
         List<Statement> statements = null;
         try {
@@ -75,7 +78,7 @@ public class Jlox {
             if (stmt != null) {
                 Object value = interpreter.interpret(stmt);
                 String str = interpreter.stringify(value);
-                if (!str.equals("nil")) System.out.println(str);
+                if (!str.equals("nil") && repl) System.out.println(str);
             }
         }
     }

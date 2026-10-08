@@ -11,43 +11,38 @@ public class TestHarness {
 
     private static final String TEST_FOLDER = "jlox/src/test/resources/test/";
     private static final String LOX_EXTENSION = ".lox";
-    private static final String RUNTIME_ERROR = "expect runtime error: ";
-    private static final String SYNTAX_ERROR = "Error at '";
-    private static final String EXPECT = "expect: ";
-    private static final String START = "// ";
-    String regexExpect = "^//\\s*expect:\\s*(.*)$";
+    private final static String[] regex = {"^/\\s*expect:\\s*(.*)$", "^/\\s*expect runtime error:\\s*(.*?)(?:\\.)?$", "^//\\s*(Error at '.*?': .*)$"};
+    static StringBuilder report = new StringBuilder();
 
 
     private String code;
     private int currentPos = 0;
 
-    public static void main(String[] arg) {
-        new TestHarness().runTest();
+    public static void main(String[] args) throws IOException {
+        new TestHarness().runTests();
+        writeTestsuiteReport(report.toString());
     }
 
-    public void runTest() {
-
+    public void runTests() {
         try (Stream<Path> paths = Files.walk(new File(TEST_FOLDER).toPath())) {
             paths
                     .filter(Files::isRegularFile)
                     .filter(path -> path.toString().endsWith(LOX_EXTENSION))
-                    .forEach(this::runTest);
+                    .forEach(this::runOneTest);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
-
     }
 
-    private void runTest(Path path) {
+    private void runOneTest(Path path) {
+        Result testResult;
         try {
             this.code = Files.readString(path);
             this.currentPos = 0;
+
             StringBuilder sb = new StringBuilder();
-            while (!end()) {
-                String s = scan();
-                if (!s.isEmpty()) sb.append(s).append('\n');
-                advance();
-            }
+            while (!end()) sb.append(scan());
+
             String expected = sb.toString();
 
             Process process = new ProcessBuilder("jlox/src/test/java/run.sh", path.toAbsolutePath().toString())
@@ -57,27 +52,38 @@ public class TestHarness {
                     process.getInputStream().readAllBytes(),
                     StandardCharsets.UTF_8
             );
+            testResult = new Result(path.toAbsolutePath().toString(), expected, output);
 
-            check(output, expected, path.toAbsolutePath().toString());
-
-        } catch (IOException ignored) {
-            ignored.printStackTrace();
+        } catch (IOException e) {
+            testResult = new Result(path.toAbsolutePath().toString(), null, e.toString());
         }
+        String result = testResult.recordResult();
+        System.out.println(result);
+        report.append(result);
     }
 
-    private void check(String actual, String expected, String testFile) {
-        if (!actual.contains(expected)) {
-            System.out.println("FAIL: " + testFile);
-            System.out.println("Expected:\n" + expected);
-            System.out.println("Actual:\n" + actual);
-            return;
+    private String scan() {
+        char c = advance();
+        if (c == '/' && check('/')) {
+            return find(consume());
         }
-        System.out.println("PASS: " + testFile);
+        return "";
     }
 
-    private void advance() {
-        if (end()) return;
-        currentPos++;
+    public static String find(String s) {
+        StringBuilder match = new StringBuilder();
+        for (String regex : regex) {
+            Matcher matcher = Pattern.compile(regex).matcher(s);
+            if (matcher.find()) {
+                match.append(matcher.group(1)).append('\n');
+            }
+        }
+        // here none of the expected output is found
+        return match.toString();
+    }
+
+    private char advance() {
+        return code.charAt(currentPos++);
     }
 
     private boolean end() {
@@ -89,51 +95,35 @@ public class TestHarness {
     }
 
     private String consume() {
-        StringBuilder sb = new StringBuilder();
-        while (!end() && code.charAt(currentPos) != '\n') {
-            sb.append(code.charAt(currentPos));
-            advance();
-        }
-        return sb.toString();
+        int start = currentPos;
+        while (!end() && !check('\n')) advance();
+        return code.substring(start, currentPos);
     }
 
-    private String found(String s, String regex) {
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(s);
-        if (matcher.find()) {
-            return matcher.group(1);
-        }
-        return "";
+    static void writeTestsuiteReport(String content) throws IOException {
+        Path outputDir = Path.of("output~");
+        Files.createDirectories(outputDir);
+        Path file = outputDir.resolve("Testsuite-rport.txt");
+
+        Files.writeString(file, content);
     }
 
-    private String scan() {
-        char c = code.charAt(currentPos);
-        if (c == '/' && check('/')) {
-            String expectation = consume();
-            if (expectation.contains(SYNTAX_ERROR)) {
-//                return found(expectation, regexSyntax);
-                return expectation.replaceFirst("^// ", "");
-            } else if (expectation.contains(RUNTIME_ERROR)) {
-//                return found(expectation, regexRuntime);
-                return expectation.replaceFirst("^// ", "");
-            } else if (expectation.contains(EXPECT)) {
-                return found(expectation, regexExpect);
+    record Result(String test, String expected, String actual) {
+        public final static String PASS = "PASS";
+        public final static String FAIL = "FAIL";
+
+        public String getResult() {
+            return expected.equals(actual) ? PASS : FAIL;
+        }
+
+        public String recordResult() {
+            String result = this.getResult();
+            String report = test + " " + result + '\n';
+            if (result.equals(FAIL)) {
+                report += "Expected: \n" + this.expected;
+                report += "Got: \n" + this.actual;
             }
-        }
-        return "";
-    }
-
-    class TestOutput {
-        private final String compileError;
-        private final String runtimeError;
-        private final String stderr;
-        private final String stdout;
-
-        public TestOutput(String stdout, String stderr, String runtimeError, String compileError) {
-            this.stdout = stdout;
-            this.stderr = stderr;
-            this.runtimeError = runtimeError;
-            this.compileError = compileError;
+            return report + "==============================================================";
         }
     }
 }
