@@ -321,7 +321,7 @@ public class Parser {
             consume(RIGHT_PAREN, "Expected token \")\"");
             return new Grouping(expr);
         }
-        throw ParseError.error(peek(), "Expected expression");
+        throw ParseError.error(peek(), "Expect expression.");
     }
 
     private Token consume(TokenType tokenType, String errorMessage) {
