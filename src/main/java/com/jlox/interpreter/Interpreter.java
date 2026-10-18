@@ -117,7 +117,7 @@ public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<
 
     private void checkNumberOperand(Token operator, Object... operands) {
         for (Object operand : operands)
-            if (!(operand instanceof Double)) throw new RuntimeError(operator, "Operand must be a number");
+            if (!(operand instanceof Double)) throw new RuntimeError(operator, "Operand must be a number.");
     }
 
     @Override
@@ -155,10 +155,11 @@ public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<
     @Override
     public Void visit(PrintStmnt statement) {
         Object expr = statement.expression().accept(this);
-        if (expr instanceof String || expr instanceof Interpreter || expr instanceof Double) {
+        if (expr instanceof String) {
             System.out.println(expr);
+        } else if (expr instanceof Double) {
+            System.out.println((((Double) expr) % 1 == 0 ? String.format("%.0f", expr) : expr.toString()));
         }
-//        throw new RuntimeError(null, "Operands must be two numbers or two strings.");
         return null;
     }
 

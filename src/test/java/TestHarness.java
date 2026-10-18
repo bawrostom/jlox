@@ -6,12 +6,14 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 public class TestHarness {
 
+    private static String cmd = "";
     private static final String TEST_FOLDER = "jlox/src/test/resources/test/";
     private static final String REPORT_FOLDER = "jlox/build/reports/tests";
     private static final String REPORT_NAME = "Testsuite-rport.txt";
@@ -29,6 +31,9 @@ public class TestHarness {
 
 
     public static void main(String[] args) throws IOException {
+        if (args.length > 0 && Objects.equals(args[0], "debug")) {
+            cmd = args[0];
+        }
         TestHarness testHarness = new TestHarness();
         testHarness.runTests();
         testHarness.testsSummary();
@@ -64,7 +69,7 @@ public class TestHarness {
 
             String expected = sb.toString();
 
-            Process process = new ProcessBuilder(RUNNER_SCRIPT, path.toAbsolutePath().toString())
+            Process process = new ProcessBuilder(RUNNER_SCRIPT, cmd, path.toAbsolutePath().toString())
                     .start();
 
             String output = new String(
