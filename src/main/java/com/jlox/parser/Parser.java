@@ -300,7 +300,7 @@ public class Parser {
     private Expression unary() {
         if (match(BANG, MINUS)) {
             Token operator = previous();
-            return new Unary(operator, primary());
+            return new Unary(operator, unary());
         }
         return primary();
     }

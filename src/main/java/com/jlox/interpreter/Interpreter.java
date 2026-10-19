@@ -122,7 +122,7 @@ public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<
 
     @Override
     public Object visit(Grouping expression) {
-        return expression.accept(this);
+        return expression.expression().accept(this);
     }
 
     @Override
