@@ -53,34 +53,32 @@ public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<
                     return (double) left + (double) right;
                 } else if (left instanceof String && right instanceof String) {
                     return (String) left + right;
-                } else if (left instanceof String || right instanceof String) {
-                    return String.valueOf(left) + String.valueOf(right);
                 }
                 throw new RuntimeError(operator, "Operands must be two numbers or two strings.");
             case MINUS:
-                checkNumberOperand(operator, left, right);
+                checkNumberOperand(operator, false, left, right);
                 return (double) left - (double) right;
             case STAR:
-                checkNumberOperand(operator, left, right);
+                checkNumberOperand(operator, false, left, right);
                 return (double) left * (double) right;
             case SLASH:
-                checkNumberOperand(operator, left, right);
+                checkNumberOperand(operator, false, left, right);
                 double result = ((double) left / (double) right);
                 if (Double.isNaN(result) || Double.isInfinite(result)) {
                     throw new ZeroDivisionError(expression.operator());
                 }
                 return result;
             case GREATER:
-                checkNumberOperand(operator, left, right);
+                checkNumberOperand(operator, false, left, right);
                 return (double) left > (double) right;
             case GREATER_EQUAL:
-                checkNumberOperand(operator, left, right);
+                checkNumberOperand(operator, false, left, right);
                 return (double) left >= (double) right;
             case LESS:
-                checkNumberOperand(operator, left, right);
+                checkNumberOperand(operator, false, left, right);
                 return (double) left < (double) right;
             case LESS_EQUAL:
-                checkNumberOperand(operator, left, right);
+                checkNumberOperand(operator, false, left, right);
                 return (double) left <= (double) right;
             case BANG_EQUAL:
                 return !isEqual(left, right);
@@ -107,7 +105,7 @@ public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<
         right = expression.operand().accept(this);
         switch (expression.operator().type()) {
             case MINUS:
-                checkNumberOperand(expression.operator(), right);
+                checkNumberOperand(expression.operator(), true, right);
                 return -(double) right;
             case BANG:
                 return !isTruthy(right);
@@ -115,9 +113,10 @@ public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<
         return null;
     }
 
-    private void checkNumberOperand(Token operator, Object... operands) {
+    private void checkNumberOperand(Token operator, boolean unary, Object... operands) {
+        String errorMessage = unary ? "Operand must be a number." : "Operands must be numbers.";
         for (Object operand : operands)
-            if (!(operand instanceof Double)) throw new RuntimeError(operator, "Operand must be a number.");
+            if (!(operand instanceof Double)) throw new RuntimeError(operator, errorMessage);
     }
 
     @Override
@@ -155,7 +154,7 @@ public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<
     @Override
     public Void visit(PrintStmnt statement) {
         Object expr = statement.expression().accept(this);
-        if (expr instanceof String) {
+        if (expr instanceof String || expr instanceof Boolean) {
             System.out.println(expr);
         } else if (expr instanceof Double) {
             System.out.println((((Double) expr) % 1 == 0 ? String.format("%.0f", expr) : expr.toString()));

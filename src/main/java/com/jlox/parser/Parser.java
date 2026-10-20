@@ -196,7 +196,7 @@ public class Parser {
         while (match(OR)) {
             Token operator = previous();
             Expression right = logical_end();
-            left = new Binary(left, operator, right);
+            left = new Logical(left, operator, right);
         }
         return left;
     }
