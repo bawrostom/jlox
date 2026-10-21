@@ -27,6 +27,8 @@
 **jlox/src/test/resources/test/number/nan_equality.lox**
 **jlox/src/test/resources/test/operator/not_class.lox**
 **jlox/src/test/resources/test/operator/not.lox**
+**jlox/src/test/resources/test/operator/equals_class.lox**
+**jlox/src/test/resources/test/operator/equals_method.lox
 **jlox/src/test/resources/test/variable/uninitialized.lox**
 **jlox/src/test/resources/test/variable/use_local_in_initializer.lox**
 **jlox/src/test/resources/test/variable/duplicate_parameter.lox**
