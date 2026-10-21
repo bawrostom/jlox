@@ -154,7 +154,9 @@ public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<
     @Override
     public Void visit(PrintStmnt statement) {
         Object expr = statement.expression().accept(this);
-        if (expr instanceof String || expr instanceof Boolean) {
+        if (expr == null) {
+            System.out.println("nil");
+        } else if (expr instanceof String || expr instanceof Boolean) {
             System.out.println(expr);
         } else if (expr instanceof Double) {
             System.out.println((((Double) expr) % 1 == 0 ? String.format("%.0f", expr) : expr.toString()));
@@ -243,8 +245,8 @@ public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<
         Token operator = expression.operator();
 
         if (operator.type() == OR) {
-            if (isTruthy(expression.left())) return left;
-        } else if (!isTruthy(expression.left())) return left;
+            if (isTruthy(expression.left().accept(this))) return left;
+        } else if (!isTruthy(expression.left().accept(this))) return left;
 
         return expression.right().accept(this);
     }

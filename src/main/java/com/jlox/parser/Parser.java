@@ -214,7 +214,7 @@ public class Parser {
         while (match(AND)) {
             Token operator = previous();
             Expression right = equality();
-            left = new Binary(left, operator, right);
+            left = new Logical(left, operator, right);
         }
         return left;
     }
