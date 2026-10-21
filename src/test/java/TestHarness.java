@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 public class TestHarness {
 
     private static String cmd = "";
+    private static boolean DEBUG;
     private static final String TEST_FOLDER = "jlox/src/test/resources/test/";
     private static final String REPORT_FOLDER = "jlox/build/reports/tests";
     private static final String REPORT_NAME = "Testsuite-rport.txt";
@@ -31,8 +32,9 @@ public class TestHarness {
 
 
     public static void main(String[] args) throws IOException {
-        if (args.length > 0 && Objects.equals(args[0], "debug")) {
+        if (args.length > 0) {
             cmd = args[0];
+            DEBUG = Objects.equals(args[0], "debug");
         }
         TestHarness testHarness = new TestHarness();
         testHarness.runTests();
@@ -76,6 +78,11 @@ public class TestHarness {
                     process.getInputStream().readAllBytes(),
                     StandardCharsets.UTF_8
             );
+
+            if (DEBUG) {
+                System.out.println(output);
+            }
+
             testResult = new Result(path.toAbsolutePath().toString(), expected, output);
 
         } catch (IOException e) {
