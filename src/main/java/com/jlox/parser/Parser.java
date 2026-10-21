@@ -40,7 +40,7 @@ public class Parser {
     }
 
     private Statement varStatement() {
-        Token name = consume(IDENTIFIER, "Expected an identifier after var key word");
+        Token name = consume(IDENTIFIER, "Expect variable name.");
         Expression initializer = null;
         if (check(EQUAL)) {
             advance();
