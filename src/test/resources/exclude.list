@@ -36,3 +36,4 @@
 **jlox/src/test/resources/test/variable/use_this_as_var.lox**
 **jlox/src/test/resources/test/variable/collide_with_parameter.lox**
 **jlox/src/test/resources/test/variable/early_bound.lox**
+**jlox/src/test/resources/test/variable/duplicate_local.lox**
