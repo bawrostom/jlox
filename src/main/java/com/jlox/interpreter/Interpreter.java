@@ -250,4 +250,9 @@ public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<
 
         return expression.right().accept(this);
     }
+
+    @Override
+    public Object visit(Call expression) {
+        return null;
+    }
 }
