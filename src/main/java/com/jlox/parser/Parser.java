@@ -302,7 +302,25 @@ public class Parser {
             Token operator = previous();
             return new Unary(operator, unary());
         }
-        return primary();
+        return call();
+    }
+
+    //     call           → primary ( "(" arguments? ")" )* ;
+    //     arguments      → expression ("," expression)* ;
+    private Expression call() {
+        Expression expression = primary();
+        ArrayList<Expression> args = new ArrayList<>();
+        while (match(LEFT_PAREN)) {
+            if (!check(RIGHT_PAREN)) {
+                args.add(expression());
+                while (match(COMMA)) {
+                    args.add(expression());
+                }
+                expression = new Call(expression, args);
+            }
+            consume(RIGHT_PAREN, "Expect \")\".");
+        }
+        return expression;
     }
 
     //    primary        → NUMBER | STRING | "true" | "false" | "nil"

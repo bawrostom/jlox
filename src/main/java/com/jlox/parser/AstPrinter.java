@@ -50,6 +50,15 @@ public class AstPrinter implements ExpressionVisitor<String> {
                 expression.left(), expression.right());
     }
 
+    @Override
+    public String visit(Call expression) {
+        StringBuilder string = new StringBuilder();
+        for (Expression expr : expression.args()) {
+            string.append(" ").append(expr.accept(this));
+        }
+        return expression.callee().accept(this) + string;
+    }
+
 
     public String parenthesize(String name, Expression... expressions) {
         StringBuilder string = new StringBuilder();
