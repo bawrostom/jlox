@@ -3,7 +3,7 @@ package com.jlox.parser;
 public class RPN implements ExpressionVisitor<String> {
 
     public String print(Expression expression) {
-        return expression.getExpression().accept(this);
+        return expression.accept(this);
     }
 
     @Override
@@ -49,6 +49,11 @@ public class RPN implements ExpressionVisitor<String> {
     public String visit(Logical expression) {
         return parenthesize(expression.operator().lexeme(),
                 expression.left(), expression.left());
+    }
+
+    @Override
+    public String visit(Call expression) {
+        return "";
     }
 
     public String parenthesize(String name, Expression... expressions) {
