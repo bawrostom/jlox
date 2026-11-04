@@ -1,5 +1,6 @@
 package com.jlox.parser;
 
+import com.jlox.error.Error;
 import com.jlox.error.ParseError;
 import com.jlox.scanner.Token;
 
@@ -22,15 +23,18 @@ public class Parser {
     public List<Statement> parse() {
         List<Statement> statements = new ArrayList<>();
         while (!end()) {
-            statements.add(varDeclaration());
+            statements.add(declaration());
         }
         return statements;
     }
 
-    public Statement varDeclaration() {
+    public Statement declaration() {
         try {
             if (match(VAR)) {
                 return varStatement();
+            }
+            if (match(FUN)) {
+                return funStatement();
             }
             return statement();
         } catch (ParseError e) {
@@ -48,6 +52,23 @@ public class Parser {
         }
         consume(SEMICOLON, "Expected ';' after value.");
         return new VarStmnt(name, initializer);
+    }
+
+    private Statement funStatement() {
+        Token name = consume(IDENTIFIER, "Expect function name.");
+        Token r = consume(LEFT_PAREN, "Expect \"(\" name.");
+        ArrayList<Token> args = new ArrayList<>();
+        if (!match(RIGHT_PAREN)) {
+            {
+                args.add(
+                        consume(IDENTIFIER, "Expect parameter name."));
+            }
+            while (match(COMMA)) ;
+        }
+        consume(RIGHT_PAREN, "Expect \")\" name.");
+        consume(LEFT_BRACE, "Expect \"}\" name.");
+        BlockStmnt blk = new BlockStmnt(block());
+        return new FunStmnt(name, args, blk);
     }
 
     private Statement statement() {
@@ -117,7 +138,7 @@ public class Parser {
     private List<Statement> block() {
         List<Statement> statements = new ArrayList<>();
         while (!check(RIGHT_BRACE) && !end()) {
-            statements.add(varDeclaration());
+            statements.add(declaration());
         }
         consume(RIGHT_BRACE, "Expected '}' after value.");
         return statements;
@@ -314,9 +335,14 @@ public class Parser {
             if (!check(RIGHT_PAREN)) {
                 args.add(expression());
                 while (match(COMMA)) {
+                    if (args.size() >= 255) {
+                        Error.error(peek(), "Can't have more than 255 arguments.");
+                    }
                     args.add(expression());
                 }
-                expression = new Call(expression, args);
+                expression = new Call(expression, previous(), args);
+            } else {
+                expression = new Call(expression, previous(), null);
             }
             consume(RIGHT_PAREN, "Expect \")\".");
         }

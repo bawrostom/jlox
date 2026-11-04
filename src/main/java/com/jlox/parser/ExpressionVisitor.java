@@ -17,4 +17,6 @@ public interface ExpressionVisitor<R> {
     public R visit(Assign expression);
 
     public R visit(Logical expression);
+
+    public R visit(Call expression);
 }

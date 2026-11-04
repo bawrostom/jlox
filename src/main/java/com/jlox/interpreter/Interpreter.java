@@ -6,19 +6,38 @@ import com.jlox.error.ZeroDivisionError;
 import com.jlox.parser.*;
 import com.jlox.scanner.Token;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.jlox.scanner.Token.TokenType.OR;
 
 public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<Object> {
 
-    private Environment env = new Environment();
+    final public Environment globals = new Environment();
+    private Environment env = globals;
 
     private boolean whileFlag;
     private boolean breakFlag;
 
 
     public Object interpret(Statement statement) {
+        globals.define("clock", new LoxCallable() {
+            @Override
+            public Object call(Interpreter interpreter, List<Object> arguments) {
+                return (double) System.currentTimeMillis() / 1000;
+            }
+
+            @Override
+            public int arity() {
+                return 0;
+            }
+
+            @Override
+            public String toString() {
+                return "<native fn>";
+            }
+
+        });
         try {
             Object value = statement.accept(this);
 //           System.out.println(stringify(value));
@@ -215,7 +234,14 @@ public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<
         throw new RuntimeError(breakStmnt.token(), "Unexpected 'break' statement");
     }
 
-    private void executeBlock(List<Statement> statements, Environment environment) {
+    @Override
+    public Object visit(FunStmnt funStmnt) {
+        LoxFunction function = new LoxFunction(funStmnt);
+        env.define(funStmnt.name().lexeme(), function);
+        return null;
+    }
+
+    public void executeBlock(List<Statement> statements, Environment environment) {
         Environment previous = this.env;
         try {
             this.env = environment;
@@ -253,6 +279,23 @@ public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<
 
     @Override
     public Object visit(Call expression) {
-        return null;
+        Object callee = expression.callee().accept(this);
+
+        if (!(callee instanceof LoxCallable)) {
+            throw new RuntimeError(expression.paren(), "Can only call functions and classes.");
+        }
+
+        List<Object> arguments = new ArrayList<>();
+        for (Expression arg : expression.args()) {
+            arguments.add(arg.accept(this));
+        }
+
+        LoxCallable function = (LoxCallable) callee;
+        if (arguments.size() != function.arity()) {
+            throw new RuntimeError(expression.paren(), "Expected " +
+                    function.arity() + " arguments but got " +
+                    arguments.size() + ".");
+        }
+        return function.call(this, arguments);
     }
 }
