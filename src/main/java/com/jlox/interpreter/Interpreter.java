@@ -179,7 +179,10 @@ public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<
             System.out.println(expr);
         } else if (expr instanceof Double) {
             System.out.println((((Double) expr) % 1 == 0 ? String.format("%.0f", expr) : expr.toString()));
+        } else if (expr instanceof LoxCallable) {
+            System.out.println(expr.toString());
         }
+
         return null;
     }
 

@@ -58,15 +58,18 @@ public class Parser {
         Token name = consume(IDENTIFIER, "Expect function name.");
         Token r = consume(LEFT_PAREN, "Expect \"(\" name.");
         ArrayList<Token> args = new ArrayList<>();
-        if (!match(RIGHT_PAREN)) {
-            {
+        if (!check(RIGHT_PAREN)) {
+            do {
+                if (args.size() >= 255) {
+                    Error.error(peek(), "Can't have more than 255 parameters.");
+                }
                 args.add(
                         consume(IDENTIFIER, "Expect parameter name."));
             }
-            while (match(COMMA)) ;
+            while (match(COMMA));
         }
-        consume(RIGHT_PAREN, "Expect \")\" name.");
-        consume(LEFT_BRACE, "Expect \"}\" name.");
+        consume(RIGHT_PAREN, "Expect ')' after parameters.");
+        consume(LEFT_BRACE, "Expect '{' before function body.");
         BlockStmnt blk = new BlockStmnt(block());
         return new FunStmnt(name, args, blk);
     }
@@ -333,16 +336,16 @@ public class Parser {
         ArrayList<Expression> args = new ArrayList<>();
         while (match(LEFT_PAREN)) {
             if (!check(RIGHT_PAREN)) {
-                args.add(expression());
+                args.add(assignment());
                 while (match(COMMA)) {
                     if (args.size() >= 255) {
                         Error.error(peek(), "Can't have more than 255 arguments.");
                     }
-                    args.add(expression());
+                    args.add(assignment());
                 }
                 expression = new Call(expression, previous(), args);
             } else {
-                expression = new Call(expression, previous(), null);
+                expression = new Call(expression, previous(), args);
             }
             consume(RIGHT_PAREN, "Expect \")\".");
         }

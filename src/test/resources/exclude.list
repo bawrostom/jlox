@@ -8,7 +8,9 @@
 **/expressions/**
 **/field/**
 **/for/**
-**/function/**
+**/function/nested_call_with_arguments**
+**/function/parameters**
+**/function/**recursion**
 **/inheritance/**
 **/limit/**
 **/method/**
