@@ -244,6 +244,13 @@ public class Interpreter implements ExpressionVisitor<Object>, StatementVisitor<
         return null;
     }
 
+    @Override
+    public Object visit(ReturnStmt returnStmt) {
+        Object value = null;
+        if (returnStmt != null) value = returnStmt.value().accept(this);
+        throw new Return(value);
+    }
+
     public void executeBlock(List<Statement> statements, Environment environment) {
         Environment previous = this.env;
         try {

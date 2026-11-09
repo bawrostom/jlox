@@ -12,7 +12,11 @@ public record LoxFunction(FunStmnt declaration) implements LoxCallable {
             env.define(declaration.params().get(i).lexeme(),
                     arguments.get(i));
         }
-        interpreter.executeBlock(declaration.body().statements(), env);
+        try {
+            interpreter.executeBlock(declaration.body().statements(), env);
+        } catch (Return r) {
+            return r.value;
+        }
         return null;
     }
 

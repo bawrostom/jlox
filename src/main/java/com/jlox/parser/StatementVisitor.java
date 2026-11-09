@@ -17,5 +17,7 @@ public interface StatementVisitor<R> {
     public R visit(BreakStmnt breakStmnt);
 
     public R visit(FunStmnt breakStmnt);
+
+    public R visit(ReturnStmt rreturnStmnt);
 }
 
