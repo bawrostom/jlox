@@ -4,10 +4,10 @@ import com.jlox.parser.FunStmnt;
 
 import java.util.List;
 
-public record LoxFunction(FunStmnt declaration) implements LoxCallable {
+public record LoxFunction(FunStmnt declaration, Environment closure) implements LoxCallable {
     @Override
     public Object call(Interpreter interpreter, List<Object> arguments) {
-        Environment env = new Environment(interpreter.globals);
+        Environment env = new Environment(closure);
         for (int i = 0; i < declaration.params().size(); i++) {
             env.define(declaration.params().get(i).lexeme(),
                     arguments.get(i));
