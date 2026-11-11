@@ -343,8 +343,8 @@ public class Parser {
     //     arguments      → expression ("," expression)* ;
     private Expression call() {
         Expression expression = primary();
-        ArrayList<Expression> args = new ArrayList<>();
         while (match(LEFT_PAREN)) {
+            ArrayList<Expression> args = new ArrayList<>();
             if (!check(RIGHT_PAREN)) {
                 args.add(assignment());
                 while (match(COMMA)) {
@@ -353,11 +353,9 @@ public class Parser {
                     }
                     args.add(assignment());
                 }
-                expression = new Call(expression, previous(), args);
-            } else {
-                expression = new Call(expression, previous(), args);
             }
             consume(RIGHT_PAREN, "Expect \")\".");
+            expression = new Call(expression, previous(), args);
         }
         return expression;
     }
